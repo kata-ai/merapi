@@ -4,14 +4,13 @@ Pluginable Depencency Injection Container for Node.js
 ## Installation
 Install using npm:
 ```
-npm install @yesboss/merapi --save
+npm install merapi --save
 ```
 
 ## Copyright
-Copyright (c) 2015-2016 YesBoss Group. All rights reserved.
-We plan to open source this later in 2016, however please do not share
-this before we officially release this as open source.
+Copyright (c) 2015-2017 Kata.ai. All rights reserved.
 
 ## Contributors
 Ahmad Rizqi Meydiarso (rizqme) - Initial Author
 Roni Kurniawan
+Ikmal Syifai
