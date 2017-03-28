@@ -165,11 +165,11 @@ declare module "merapi" {
         /**
          * Start container
          */
-        start() : void;
+        start() : Promise<void>;
         /**
          * Stop container
          */
-        stop() : void;
+        stop() : Promise<void>;
         /**
          * Get component synchronously
          */
@@ -186,7 +186,7 @@ declare module "merapi" {
          * Register plugin manually
          */
         registerPlugin(name : string, plugin : IPluginDescriptor) : void;
-        initialize() : void;
+        initialize() : Promise<void>;
         /**
          * 
          */
