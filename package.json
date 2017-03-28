@@ -1,6 +1,6 @@
 {
   "name": "merapi",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "description": "Javascript Framework for Microservices",
   "main": "./index.js",
   "types": "./index.d.ts",

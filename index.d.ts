@@ -133,7 +133,7 @@ declare module "merapi" {
     
     export interface IContainer {
         alias(aliasName : string, originName : string) : void;
-        register<T>(name : string, type : string | IClosure<T> | T, options : boolean | Json) : Promise<void>;
+        register<T>(name : string, type : string | IClosure<T> | T, options : boolean | Json) : void;
         registerComponentType<T>(type : string, resolver : IComponentResolver<T>) : void;
         resolve<T>(name : string, deps : IHash<any>, prev : string[]) : Promise<T> | null;
         start() : Promise<void>;
