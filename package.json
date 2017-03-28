@@ -1,32 +1,33 @@
 {
-    "name": "merapi",
-    "version": "0.14.0",
-    "description": "Javascript Framework for Microservices",
-    "main": "./index.js",
-    "types": "./index.d.ts",
-    "scripts": {
-        "test": "./node_modules/.bin/mocha",
-        "coverage": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://bitbucket.org/yesboss/merapi.git"
-    },
-    "author": "YesBoss",
-    "license": "MIT",
-    "dependencies": {
-        "co": "^4.6.0",
-        "colors": "^1.1.2",
-        "dateformat": "^1.0.12",
-        "deasync": "^0.1.7",
-        "esprima": "^2.7.2",
-        "is-class": "0.0.4",
-        "lodash": "^4.1.0",
-        "to-snake-case": "^1.0.0"
-    },
-    "devDependencies": {
-        "mocha": "^2.4.5",
-        "istanbul": "^0.4.5",
-        "then-sleep": "^1.0.1"
-    }
+  "name": "merapi",
+  "version": "0.15.0",
+  "description": "Javascript Framework for Microservices",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha",
+    "coverage": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://bitbucket.org/yesboss/merapi.git"
+  },
+  "author": "kata.ai",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "bluebird-co": "^2.2.0",
+    "colors": "^1.1.2",
+    "dateformat": "^1.0.12",
+    "esprima": "^2.7.2",
+    "is-class": "0.0.4",
+    "lodash": "^4.1.0",
+    "to-snake-case": "^1.0.0"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.5",
+    "mocha": "^2.4.5",
+    "sleep-promise": "^2.0.0",
+    "then-sleep": "^1.0.1"
+  }
 }

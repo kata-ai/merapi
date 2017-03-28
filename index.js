@@ -1,7 +1,6 @@
 "use strict";
 
-const async = require("./lib/async");
-const sync = require("./lib/sync");
+const asyn = require("./lib/async");
 const path = require("path");
 const snake = require("to-snake-case");
 
@@ -41,9 +40,6 @@ class Container extends Component.mixin(AsyncEmitter) {
             }
         }
 
-        this.emitSync("beforeConstruct", this);
-
-        this.emitSync("beforeConfigCreate", this);
         this.config = Config.create(this.options.config, this.options.delimiters || { left: "{", right: "}" });
 
         this.config.env = process.env.NODE_ENV || "development";
@@ -59,40 +55,25 @@ class Container extends Component.mixin(AsyncEmitter) {
         if (this.options.extConfig)
             this.config.extend(this.options.extConfig);
 
-        this.emit("afterConfigCreate", this);
+        process.setMaxListeners(0);
+        process.on("exit", this.emit.bind(this, "exit"));
+        process.on("SIGTERM", this.emit.bind(this, "exit"));
+        this.on("exit", this.stop.bind(this));
+        this.on("uncaughtException", this.handleUncaughtException.bind(this));
+        process.on("unhandledRejection", this.emit.bind(this, "uncaughtException"));
 
-        this.emitSync("beforeInjectorCreate", this);
         this.injector = new Injector();
         this.injector.on("beforeRegister", this.emit.bind(this, "beforeComponentRegister"));
         this.injector.on("afterRegister", this.emit.bind(this, "afterComponentRegister"));
         this.injector.on("beforeResolve", this.emit.bind(this, "beforeComponentResolve"));
         this.injector.on("afterResolve", this.emit.bind(this, "afterComponentResolve"));
         this.injector.on("instantiate", this.emit.bind(this, "componentInstantiate"));
+
         this.injector.register("basepath", this.basepath, true);
         this.injector.register("config", this.config, true);
         this.injector.register("injector", this.injector, true);
         this.injector.register("container", this, true);
         this.injector.register("logger", require("./lib/logger"));
-        this.emitSync("afterInjectorCreate", this);
-
-        this.emitSync("beforeConfigResolve", this);
-        this.config.resolve();
-        this.emitSync("afterConfigResolve", this);
-
-        this.emitSync("beforePluginInit", this);
-        this.initPlugins(this.options.plugins);
-        this.initPlugins(this.config.default("plugins", {}));
-        this.emitSync("afterPluginInit", this);
-
-        process.setMaxListeners(0);
-        process.on("exit", this.emit.bind(this, "exit"));
-        process.on("SIGTERM", this.emit.bind(this, "exit"));
-        this.on("exit", this.stop.bind(this));
-        this.on("uncaughtException", this.handleUncaughtException.bind(this));
-        process.on("uncaughtException", this.emit.bind(this, "uncaughtException"));
-        process.on("unhandledRejection", this.emit.bind(this, "uncaughtException"));
-
-        this.emitSync("afterConstruct", this);
     }
 
     handleUncaughtException(e) {
@@ -151,20 +132,36 @@ class Container extends Component.mixin(AsyncEmitter) {
         return { ref: opt.ref };
     }
 
-    initialize() {
+    *initialize() {
         if (this._isInitialized) return;
-        this.emitSync("beforeInit", this);
-        this.emitSync("beforeComponentsRegister", this);
+        if (this._isInitializing) return yield this._isInitializing;
+        this._isInitializing = this._initialize();
+        yield this._isInitializing;
         this._isInitialized = true;
+        this._isInitializing = null;
+    }
+
+    *_initialize() {
+        yield this.emit("beforeInit", this);
+        yield this.emit("beforeConfigResolve", this);
+        this.config.resolve();
+        yield this.emit("afterConfigResolve", this);
+
+        yield this.emit("beforePluginInit", this);
+        this.initPlugins(this.options.plugins);
+        this.initPlugins(this.config.default("plugins", {}));
+        yield this.emit("afterPluginInit", this);
+
+        yield this.emit("beforeComponentsRegister", this);
 
         for (let i in this.plugins) {
             let plugin = this.plugins[i];
             if (typeof plugin.initialize == "function") {
                 if (utils.isGeneratorFunction(plugin.initialize))
-                    plugin.initialize = async(plugin.initialize);
+                    plugin.initialize = asyn(plugin.initialize);
                 let ret = plugin.initialize(this);
                 if (utils.isPromise(ret))
-                    sync(ret);
+                    yield ret;
             }
         }
 
@@ -183,43 +180,41 @@ class Container extends Component.mixin(AsyncEmitter) {
             if (opt.load)
                 this._loadOnStartList.push(name);
         }
-        this.emitSync("afterComponentsRegister", this);
+        yield this.emit("afterComponentsRegister", this);
+        yield this.emit("init", this);
 
-        this.emitSync("init", this);
+        this.config.logger = yield this.injector.resolve("logger", { $meta: { caller: "config" } });
+        this.injector.logger = yield this.injector.resolve("logger", { $meta: { caller: "injector" } });
+        this.logger = yield this.injector.resolve("logger", { $meta: { caller: "container" } });
 
-        this.config.logger = sync(this.injector.resolve("logger", { $meta: { caller: "config" } }));
-        this.injector.logger = sync(this.injector.resolve("logger", { $meta: { caller: "injector" } }));
-        this.logger = sync(this.injector.resolve("logger", { $meta: { caller: "container" } }));
-
-        this.emitSync("afterInit", this);
+        yield this.emit("afterInit", this);
     }
 
-    start() {
-        this.emitSync("beforeStart", this);
+    *start() {
+        yield this.emit("beforeStart", this);
         let main = this.config("main");
 
-        this.initialize();
+        yield this.initialize();
         if (!main) {
             this.logger.warn("No main defined");
-            return;
         }
 
         for (let i = 0; i < this._loadOnStartList.length; i++)
-            sync(this.injector.resolve(this._loadOnStartList[i]));
+            yield this.injector.resolve(this._loadOnStartList[i]);
 
-        this.emitSync("start", this);
+        yield this.emit("start", this);
         if (main) {
-            let com = this.get(main);
+            let com = yield this.get(main);
             let argv = [].concat(process.argv);
             if (com) {
                 if (com.start) {
                     let res;
                     if (utils.isGeneratorFunction(com.start))
-                        res = async(com.start).apply(com, [argv]);
+                        res = asyn(com.start).apply(com, [argv]);
                     else
                         res = com.start(argv);
                     if (utils.isPromise(res))
-                        sync(res);
+                        yield res;
                 } else {
                     this.logger.warn("Main component doesn't have start function");
                 }
@@ -228,22 +223,22 @@ class Container extends Component.mixin(AsyncEmitter) {
             }
         }
 
-        this.emitSync("afterStart", this);
+        yield this.emit("afterStart", this);
     }
 
-    get(name) {
+    *get(name) {
         let main = this.config("main");
-        this.initialize();
+        yield this.initialize();
         if (!name)
-            return sync(this.resolve(main));
+            return yield this.resolve(main);
         else
-            return sync(this.resolve(name));
+            return yield this.resolve(name);
     }
 
-    stop() {
-        this.emitSync("beforeStop", this);
-        this.emitSync("stop", this);
-        this.emitSync("afterStop", this);
+    *stop() {
+        yield this.emit("beforeStop", this);
+        yield this.emit("stop", this);
+        yield this.emit("afterStop", this);
     }
 
     initPlugins(desc) {
@@ -290,13 +285,13 @@ class Container extends Component.mixin(AsyncEmitter) {
             }
             if (/^on[A-Z]\w*/.test(i)) {
                 if (utils.isGeneratorFunction(plugin[i]))
-                    plugin[i] = async(plugin[i]);
+                    plugin[i] = asyn(plugin[i]);
                 let eventName = i.substring(2);
                 eventName = eventName.charAt(0).toLowerCase() + eventName.substring(1);
                 this.on(eventName, plugin[i].bind(plugin));
             }
             if (!/Generator$/.test(i) && utils.isGeneratorFunction(plugin[i])) {
-                plugin[i] = async(plugin[i]);
+                plugin[i] = asyn(plugin[i]);
             }
         }
     }
@@ -308,8 +303,7 @@ merapi.AsyncEmitter = AsyncEmitter;
 merapi.Injector = Injector;
 merapi.Config = Config;
 merapi.utils = utils;
-merapi.async = async;
-merapi.sync = sync;
+merapi.async = asyn;
 merapi.default = merapi;
 
 

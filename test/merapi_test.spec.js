@@ -1,9 +1,9 @@
 "use strict";
-const async = require("../async");
+const asyn = require("../async");
 const merapi = require("../index");
 const assert = require("assert");
 const Component = require("../component");
-const sleep = require("then-sleep");
+const sleep = require("sleep-promise");
 
 process.env.NODE_ENV = process.NODE_ENV || "test";
 
@@ -16,7 +16,7 @@ describe("Merapi Test", function() {
         
         let container = null;
         
-        beforeEach(async(function*() {
+        beforeEach(asyn(function*() {
             container = merapi({
                 delimiters: {
                     left: "${",
@@ -42,7 +42,7 @@ describe("Merapi Test", function() {
                 }
             });
             
-            container.initialize();
+            yield container.initialize();
         }));
         
         it("can resolve config", function() {
@@ -78,7 +78,7 @@ describe("Merapi Test", function() {
         let container = null;
         let obj = {};
         
-        beforeEach(async(function*() {
+        beforeEach(asyn(function*() {
 
             container = merapi({
                 basepath: __dirname,
@@ -96,46 +96,46 @@ describe("Merapi Test", function() {
             container.register("obj", obj, true);
             container.alias("alias", "obj");
             
-            container.initialize();
+            yield container.initialize();
         }));
 
-        it("can resolve object", async(function*() {
+        it("can resolve object", asyn(function*() {
             const o = yield container.resolve("obj");
             assert.equal(o, obj);
         }));
 
-        it("can resolve alias", async(function*() {
+        it("can resolve alias", asyn(function*() {
             const o = yield container.resolve("obj");
             const a = yield container.resolve("alias");
             assert.equal(o, obj);
             assert.equal(o, a);
         }));
 
-        it("can resolve alias from config", async(function*() {
+        it("can resolve alias from config", asyn(function*() {
             const o = yield container.resolve("comAlias");
             const a = yield container.resolve("comTest");
             assert.equal(o, a);
         }));
 
-        it("can auto load component", async(function*() {
+        it("can auto load component", asyn(function*() {
             const config = yield container.resolve("config");
             assert.equal(config.default("autoloaded", false), false);
-            container.start();
+            yield container.start();
             assert.equal(config.default("autoloaded", false), true);
         }))
         
-        it("can resolve component loader", async(function*() {
+        it("can resolve component loader", asyn(function*() {
             const comTest = yield container.resolve("comTest");
             assert.notEqual(comTest, null);
         }));
         
-        it("can resolve component class", async(function*() {
+        it("can resolve component class", asyn(function*() {
             const comClassTest = yield container.resolve("comClassTest");
             assert.notEqual(comClassTest, null);
             assert.notEqual(comClassTest.comTest, null);
         }));
 
-        it("should throw error if component type is not defined", async(function*() {
+        it("should throw error if component type is not defined", asyn(function*() {
             const con = merapi({
                 basepath: __dirname,
                 config: {
@@ -147,7 +147,7 @@ describe("Merapi Test", function() {
 
             let error = null;
             try {
-                con.initialize();
+                yield con.initialize();
             } catch(e) {
                 error = e;
             }
@@ -156,7 +156,7 @@ describe("Merapi Test", function() {
             assert.equal(error.message, "Cannot register component of unknown type: invalid");
         }));
 
-        it("should throw error if component is not found", async(function*() {
+        it("should throw error if component is not found", asyn(function*() {
             const con = merapi({
                 basepath: __dirname,
                 config: {
@@ -168,7 +168,7 @@ describe("Merapi Test", function() {
 
             let error = null;
             try {
-                con.initialize();
+                yield con.initialize();
             } catch(e) {
                 error = e;
             }
@@ -177,7 +177,7 @@ describe("Merapi Test", function() {
             assert.equal(error.code, "MODULE_NOT_FOUND");
         }));
 
-        it("should throw error if component definition is invalid", async(function*() {
+        it("should throw error if component definition is invalid", asyn(function*() {
             const con = merapi({
                 basepath: __dirname,
                 config: {
@@ -189,7 +189,7 @@ describe("Merapi Test", function() {
 
             let error = null;
             try {
-                con.initialize();
+                yield con.initialize();
             } catch(e) {
                 error = e;
             }
@@ -198,7 +198,7 @@ describe("Merapi Test", function() {
             assert.equal(error.message, "Invalid component definition for invalid");
         }));
 
-        it("should warn if main is not defined", async(function*() {
+        it("should warn if main is not defined", asyn(function*() {
             const con = merapi({
                 basepath: __dirname,
                 config: {
@@ -214,7 +214,7 @@ describe("Merapi Test", function() {
             };
             con.register("logger", logger, true);
 
-            con.start();
+            yield con.start();
 
             assert.notEqual(warningMessage, null);
             assert.equal(warningMessage, "No main defined");
@@ -223,7 +223,7 @@ describe("Merapi Test", function() {
     
     describe("Starter", function() {
         
-        it("can start a main module from component loader", async(function*() {
+        it("can start a main module from component loader", asyn(function*() {
             
             let container = merapi({
                 basepath: __dirname,
@@ -246,13 +246,13 @@ describe("Merapi Test", function() {
             config.set("main", "mainCom");
             
             assert.equal(testVal, 0);
-            container.initialize();
+            yield container.initialize();
             assert.equal(testVal, 0);
-            container.start();
+            yield container.start();
             assert.equal(testVal, 1);
         }));
         
-        it("can start a main module from component class", async(function*() {
+        it("can start a main module from component class", asyn(function*() {
             let testVal = 0;
             let container = merapi({
                 basepath: __dirname,
@@ -270,9 +270,9 @@ describe("Merapi Test", function() {
             
             
             assert.equal(testVal, 0);
-            container.initialize();
+            yield container.initialize();
             assert.equal(testVal, 0);
-            container.start();
+            yield container.start();
             assert.equal(testVal, 1);
             
         }));

@@ -4,7 +4,7 @@ const Component = require("../lib/component");
 const Injector = require("../lib/injector");
 const utils = require("../lib/utils");
 const assert = require("assert");
-const sleep = require("then-sleep");
+const sleep = require("sleep-promise");
 
 /*eslint-env mocha*/
 

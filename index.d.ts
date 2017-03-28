@@ -7,11 +7,6 @@ declare module "@yesboss/merapi" {
     export default function merapi (options : IContainerOptions) : Container;
 
     export interface IContainerEventHandlers {
-        onBeforeConstruct? : (c : Container) => Promise<void> | void;
-        onBeforeConfigCreate? : (c : Container) => Promise<void> | void;
-        onAfterConfigCreate? : (c : Container) => Promise<void> | void;
-        onBeforeInjectorCreate? : (c : Container) => Promise<void> | void;
-        onAfterInjectorCreate? : (c : Container) => Promise<void> | void;
         onBeforePluginInit? : (c : Container) => Promise<void> | void;
         onAfterPluginInit? : (c : Container) => Promise<void> | void;
         onBeforeConfigResolve? : (c : Container) => Promise<void> | void;
@@ -106,7 +101,6 @@ declare module "@yesboss/merapi" {
         once(event : T, fn : IEventHandler | IAsyncEventHandler) : number;
         removeListener(event : T, id : number) : void;
         emit(event : T, ...args : any[]) : Promise<void>;
-        emitSync(event : T, ...args : any[]) : void;
     }
 
     /**
@@ -132,11 +126,6 @@ declare module "@yesboss/merapi" {
          */
         emit(event : T, ...args : any[]) : Promise<void>;
         /**
-         * Emit an event with provided arguments
-         * synchronously
-         */
-        emitSync(event : T, ...args : any[]) : void;
-        /**
          * Create an AsyncEmitter
          */
         constructor();
@@ -144,16 +133,16 @@ declare module "@yesboss/merapi" {
     
     export interface IContainer {
         alias(aliasName : string, originName : string) : void;
-        register<T>(name : string, type : string | IClosure<T> | T, options : boolean | Json) : void;
+        register<T>(name : string, type : string | IClosure<T> | T, options : boolean | Json) : Promise<void>;
         registerComponentType<T>(type : string, resolver : IComponentResolver<T>) : void;
         resolve<T>(name : string, deps : IHash<any>, prev : string[]) : Promise<T> | null;
-        start() : void;
-        stop() : void;
-        get<T>(name : string) : T;
+        start() : Promise<void>;
+        stop() : Promise<void>;
+        get<T>(name : string) : Promise<T>;
         initPlugins(desc : string[] | IHash<Json>) : void;
         initPlugin(name : string, options : Json) : void;
         registerPlugin(name : string, plugin : IPluginDescriptor) : void;
-        initialize() : void;
+        initialize() : Promise<void>;
     }
 
     export class Container extends AsyncEmitter<string> implements IContainer {
@@ -282,6 +271,5 @@ declare module "@yesboss/merapi" {
     }
 
     export function async<T>(fn : Function) : (...args: any[]) => Promise<T>;
-    export function sync<T>(promise : Promise<T>) : T;
 
 }
