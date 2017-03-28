@@ -1,5 +1,5 @@
 {
-    "name": "@yesboss/merapi",
+    "name": "merapi",
     "version": "0.14.0",
     "description": "Javascript Framework for Microservices",
     "main": "./index.js",
