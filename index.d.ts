@@ -2,7 +2,7 @@
 // Project: merapi
 // Definitions by: Ahmad Rizqi Meydiarso
 
-declare module "@yesboss/merapi" {
+declare module "merapi" {
 
     export default function merapi (options : IContainerOptions) : Container;
 
