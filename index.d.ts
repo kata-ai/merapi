@@ -199,7 +199,7 @@ declare module "merapi" {
         get<T>(path : string, ignore? : boolean) : T;
         has(path : string) : boolean;
         default<T>(path : string, value : T) : T;
-        flatten(data : Json) : IHash<any>;
+        flatten(data? : Json) : IHash<any>;
         path(s : string) : IConfigReader;
         resolve<T>(path : string) : T;
     }
@@ -219,7 +219,7 @@ declare module "merapi" {
         set(path : string | IHash<Json>, value? : any, ignore? : boolean) : void;
         has(path : string) : boolean;
         default<T>(path : string, value : T) : T;
-        flatten(data : Json) : IHash<any>;
+        flatten(data? : Json) : IHash<any>;
         resolve<T>(path? : string) : T;
         path(s : string) : IConfig;
         extend(data : Json) : IConfig;
