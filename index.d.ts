@@ -207,7 +207,7 @@ declare module "merapi" {
     export interface IConfig extends IConfigReader {
         (path : string | IHash<Json>, value? : any, ignore? : boolean) : void;
         set(path : string | IHash<Json>, value? : any, ignore? : boolean) : void;
-        resolve() : void;
+        resolve<T>(path? : string) : T;
         path(s : string) : IConfig;
         extend(data : Json) : IConfig;
         create(data : Json, delimiters? : {left:string, right:string}, lazy?: boolean) : IConfig;
