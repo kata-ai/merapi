@@ -210,7 +210,7 @@ declare module "merapi" {
         resolve() : void;
         path(s : string) : IConfig;
         extend(data : Json) : IConfig;
-        create(data : Json, delimiters? : {left:string, right:string}) : IConfig;
+        create(data : Json, delimiters? : {left:string, right:string}, lazy?: boolean) : IConfig;
     }
 
     export class Config {
@@ -223,9 +223,9 @@ declare module "merapi" {
         resolve<T>(path? : string) : T;
         path(s : string) : IConfig;
         extend(data : Json) : IConfig;
-        create(data : Json, delimiters? : {left:string, right:string}) : IConfig;
-        static create(data : Json, delimiters? : {left:string, right:string}) : IConfig;
-        constructor(data : Json, delimiters? : {left:string, right:string});
+        create(data : Json, delimiters? : {left:string, right:string}, lazy?: boolean) : IConfig;
+        static create(data : Json, delimiters? : {left:string, right:string}, lazy?: boolean) : IConfig;
+        constructor(data : Json, delimiters? : {left:string, right:string}, lazy?: boolean);
     }
 
     export interface ILogger extends Console {

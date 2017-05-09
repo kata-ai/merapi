@@ -8,6 +8,7 @@ const AsyncEmitter = require("./lib/async_emitter");
 const Config = require("./lib/config");
 const Injector = require("./lib/injector");
 const Component = require("./lib/component");
+const Logger = require("./lib/logger");
 const utils = require("./lib/utils");
 
 function merapi(options) {
@@ -300,6 +301,7 @@ class Container extends Component.mixin(AsyncEmitter) {
 merapi.Container = Container;
 merapi.Component = Component;
 merapi.AsyncEmitter = AsyncEmitter;
+merapi.Logger = Logger;
 merapi.Injector = Injector;
 merapi.Config = Config;
 merapi.utils = utils;
