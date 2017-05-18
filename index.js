@@ -72,7 +72,13 @@ class Container extends Component.mixin(AsyncEmitter) {
 
         this.injector.register("basepath", this.basepath, true);
         this.injector.register("config", this.config, true);
-        this.injector.register("injector", this.injector, true);
+        this.injector.register("injector", {factory:($meta) => {
+            return Object.assign(new Injector(),this.injector, {
+                resolve: (name, extra, prev) => {
+                    return this.injector.resolve(name, extra, [$meta.caller].concat(prev|| []));
+                }
+            });
+        }});
         this.injector.register("container", this, true);
         this.injector.register("logger", require("./lib/logger"));
     }
