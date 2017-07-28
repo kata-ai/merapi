@@ -122,7 +122,7 @@ describe("Merapi Test", function() {
             assert.equal(config.default("autoloaded", false), false);
             yield container.start();
             assert.equal(config.default("autoloaded", false), true);
-        }))
+        }));
         
         it("can resolve component loader", asyn(function*() {
             const comTest = yield container.resolve("comTest");
