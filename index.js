@@ -59,7 +59,6 @@ class Container extends Component.mixin(AsyncEmitter) {
         process.setMaxListeners(0);
         process.on("exit", this.emit.bind(this, "exit"));
         process.on("SIGINT", this.emit.bind(this, "exit"));
-        process.on("SIGKILL", this.emit.bind(this, "exit"));
         process.on("SIGTERM", this.emit.bind(this, "exit"));
         this.on("exit", this.stop.bind(this));
         this.on("uncaughtException", this.handleUncaughtException.bind(this));
