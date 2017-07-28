@@ -1,4 +1,5 @@
 # Merapi
+[![Build Status](https://travis-ci.org/kata-ai/merapi.svg?branch=master)](https://travis-ci.org/kata-ai/merapi)
 Pluginable Depencency Injection Container for Node.js
 
 ## Installation
