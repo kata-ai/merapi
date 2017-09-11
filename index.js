@@ -248,6 +248,7 @@ class Container extends Component.mixin(AsyncEmitter) {
         yield this.emit("stop", this);
         yield this.emit("afterStop", this);
         this.cleanUp();
+        process.exit();
     }
 
     cleanUp() {
