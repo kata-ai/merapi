@@ -95,7 +95,7 @@ class Container extends Component.mixin(AsyncEmitter) {
     register(name, type, options) {
         if (typeof options == "boolean")
             return this.injector.register(name, type, options);
-        if (typeof type == "function")
+        if (typeof type == "function" || type == "object")
             return this.injector.register(name, type);
 
         return this.injector.register(name, this.loadComponent(name, type, options));
