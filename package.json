@@ -19,7 +19,7 @@
     "bluebird-co": "^2.2.0",
     "colors": "^1.1.2",
     "dateformat": "^1.0.12",
-    "esprima": "^2.7.2",
+    "esprima": "^4.0.0",
     "is-class": "0.0.4",
     "lodash": "^4.1.0",
     "to-snake-case": "^1.0.0"
