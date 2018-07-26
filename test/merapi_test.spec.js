@@ -26,6 +26,8 @@ describe("Merapi Test", function() {
                     "package.name": "merapi-test",
                     "myConfig": "${resolved.a}",
                     "myEnvConfig": "${resolved.b}",
+                    "myStrEnvConfig": "${resolved.c}",
+                    "myCrlfStrEnvConfig": "${resolved.d}",
                     "resolved": {
                         "a": 1
                     }
@@ -33,7 +35,9 @@ describe("Merapi Test", function() {
                 
                 envConfig: {
                     test: {
-                        "resolved.b": 2
+                        "resolved.b": 2,
+                        "resolved.c": "test",
+                        "resolved.d": "test\r",
                     }
                 },
                 
@@ -56,7 +60,11 @@ describe("Merapi Test", function() {
         
         it("can resolve environment config", function() {
             let myEnvConfig = container.config.get("myEnvConfig");
+            let myStrEnvConfig = container.config.get("myStrEnvConfig");
+            let myCrlfStrEnvConfig = container.config.get("myCrlfStrEnvConfig");
             assert.equal(myEnvConfig, 2);
+            assert.equal(myStrEnvConfig, "test");
+            assert.equal(myCrlfStrEnvConfig, "test");
         });
         
         it("can resolve extended config", function() {
