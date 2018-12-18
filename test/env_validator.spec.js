@@ -20,34 +20,41 @@ describe("Name of the group", () => {
         };
     });
 
-    it("should be able to validate okay, environment from JSON config file", () => {
-        const result = envValidator.validateEnvironment(config);
-        assert.equal(result, true);
+    it("should return empty array if env needed is set already", () => {
+        const result = envValidator.validateEnvironment(process.env, config);
+        assert.deepStrictEqual(result, []);
     });
 
-    it("should be able to throw error if needed config value is not set on environment variables", () => {
+    it("should be able to return not set environment variables", () => {
         config.diaenne = {
             type: "proxy",
             uri: "${$DIAENNE_URI}",
-            version: "v1"
+            version: "${$VERSION}"
         };
-        try {
-            envValidator.validateEnvironment(config);
-        } catch (e) {
-            assert.equal(e.message, "Error on Environment, 'DIAENNE_URI' is needed, but the value is undefined");
-        }
+        const result = envValidator.validateEnvironment(process.env, config);
+        assert.deepStrictEqual(result, ["DIAENNE_URI", "VERSION"]);
     });
 
-    it("should be able to throw error if needed config value is null / undefined", () => {
+    it("should throw error if one of the variable contains null", () => {
         config.diaenne = {
             type: null,
             uri: "${$DIAENNE_URI}",
-            version: "v1"
+            version: "${$VERSION}"
         };
         try {
-            envValidator.validateEnvironment(config);
-        } catch (e) {
+            envValidator.validateEnvironment(process.env, config);
+            assert.fail("Should throw error on Config");
+        } catch(e) {
             assert.equal(e.message, "Error on Config, 'diaenne.type' is needed, but the value is null");
+        }
+    });
+
+    it("should throw error if no environment variables is not installed in this system", () => {
+        try {
+            envValidator.validateEnvironment(null, config);
+            assert.fail("Should throw error on Config");
+        } catch(e) {
+            assert.equal(e.message, "No environment variable installed in this system");
         }
     });
 });
