@@ -10,6 +10,7 @@ const Injector = require("./lib/injector");
 const Component = require("./lib/component");
 const Logger = require("./lib/logger");
 const utils = require("./lib/utils");
+const EnvValidator = require("./lib/env_validator");
 
 function merapi(options) {
     return new Container(options);
@@ -150,6 +151,10 @@ class Container extends Component.mixin(AsyncEmitter) {
     }
 
     *_initialize() {
+        yield this.emit("beforeValidateConfig", this);
+        this.validateConfig();
+        yield this.emit("afterValidateConfig", this);
+
         yield this.emit("beforeInit", this);
         yield this.emit("beforeConfigResolve", this);
         this.config.resolve();
@@ -312,6 +317,19 @@ class Container extends Component.mixin(AsyncEmitter) {
             }
             if (!/Generator$/.test(i) && utils.isGeneratorFunction(plugin[i])) {
                 plugin[i] = asyn(plugin[i]);
+            }
+        }
+    }
+
+    validateConfig() {
+        let result = [];
+        if (this.options.envConfig) result = EnvValidator.validateEnvironment(this.options.envConfig[this.config.env], this.options.config);
+        if (result.length > 0) {
+            result = EnvValidator.validateEnvironment(process.env, this.options.config);
+            if (result.length > 0) {
+                this.logger.log("These configurations are not set on env variables: ");
+                this.logger.log(result);
+                throw new Error("Configuration error");
             }
         }
     }
