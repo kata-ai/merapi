@@ -66,6 +66,35 @@ describe("Env validator", () => {
     });
 });
 
-describe("", () => {
+describe("containDelimiters", () => {
+    let delimiters;
+    before(() => {
+        delimiters = {left: "{", right: "}"};
+    });
 
+    it("should return false if string contains NO delimiters", () => {
+        const res = envValidator.containDelimiters("LALAJO", delimiters);
+        assert.deepStrictEqual(res, false);
+    });
+
+    it("should return true if string contains delimiters", () => {
+        const res = envValidator.containDelimiters("{LALAJO}", delimiters);
+        assert.deepStrictEqual(res, true);
+    });
+
+    it("should return false if string is null / undefined", () => {
+        let result = envValidator.containDelimiters(null, { left: "{", right: "}" });
+        assert.deepStrictEqual(result, false);
+
+        result = envValidator.containDelimiters(undefined, delimiters);
+        assert.deepStrictEqual(result, false);
+    });
+
+    it("should return false if delimiters is null / undefined", () => {
+        let res = envValidator.containDelimiters("{LALAJO}", null);
+        assert.deepStrictEqual(res, false);
+
+        res = envValidator.containDelimiters("{LALAJO}", undefined);
+        assert.deepStrictEqual(res, false);
+    });
 });
