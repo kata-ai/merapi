@@ -322,16 +322,19 @@ class Container extends Component.mixin(AsyncEmitter) {
     }
 
     validateConfig() {
-        let result = [];
-        if (this.options.envConfig) result = EnvValidator.validateEnvironment(this.options.envConfig[this.config.env], this.options.config);
+        const combinedEnv = Object.assign(
+            {},
+            this.options.envConfig && this.options.envConfig[this.config.env],
+            this.options.extConfig,
+            process.env
+        );
+        const result = EnvValidator.validateEnvironment(combinedEnv, this.options.config);
         if (result.length > 0) {
-            result = EnvValidator.validateEnvironment(process.env, this.options.config);
-            if (result.length > 0) {
-                this.logger.log("These configurations are not set on env variables: ");
-                this.logger.log(result);
-                throw new Error("Configuration error");
-            }
+            this.logger.log("These configurations are not set on env variables: ");
+            this.logger.log(result);
+            throw new Error("Configuration error, some env variables are not set");
         }
+        return true;
     }
 }
 
