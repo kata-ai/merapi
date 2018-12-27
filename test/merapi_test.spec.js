@@ -77,6 +77,24 @@ describe("Merapi Test", function() {
             assert.equal(ENV.NODE_ENV, process.env.NODE_ENV);
             assert.equal(ENV.PATH, process.env.PATH);
         });
+
+        it("can throw error if config value is not set on env variable", asyn(function*() {
+            container = merapi({
+                delimiters: {
+                    left: "${",
+                    right: "}"
+                },
+                config: {
+                    "package.name": "${SOME_NAME}"
+                }
+            });
+
+            try {
+                yield container.initialize();
+            } catch(e) {
+                assert.equal(e.message, "Configuration error, some env variables are not set");
+            }
+        }));
     });
 
     describe("Components", function() {

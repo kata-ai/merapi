@@ -50,7 +50,6 @@ describe("Env validator", () => {
         };
         try {
             envValidator.validateEnvironment(process.env, config, delimiters);
-            assert.fail("Should throw error on Config");
         } catch(e) {
             assert.equal(e.message, "Error on Config, 'diaenne.type' is needed, but the value is null");
         }
@@ -59,7 +58,6 @@ describe("Env validator", () => {
     it("should throw error if no environment variables is not installed in this system", () => {
         try {
             envValidator.validateEnvironment(null, config, delimiters);
-            assert.fail("Should throw error on Config");
         } catch(e) {
             assert.equal(e.message, "No environment variable set in this system");
         }
@@ -68,7 +66,6 @@ describe("Env validator", () => {
     it("should throw error if no configuration is set", () => {
         try {
             envValidator.validateEnvironment({}, null, delimiters);
-            assert.fail("Should throw error on Config");
         } catch(e) {
             assert.equal(e.message, "No configuration is set");
         }
