@@ -298,7 +298,6 @@ describe("Merapi Test", function() {
             assert.equal(testVal, 0);
             yield container.start();
             assert.equal(testVal, 1);
-
         }));
     });
 });
