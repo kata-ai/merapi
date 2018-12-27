@@ -61,7 +61,16 @@ describe("Env validator", () => {
             envValidator.validateEnvironment(null, config, delimiters);
             assert.fail("Should throw error on Config");
         } catch(e) {
-            assert.equal(e.message, "No environment variable installed in this system");
+            assert.equal(e.message, "No environment variable set in this system");
+        }
+    });
+
+    it("should throw error if no configuration is set", () => {
+        try {
+            envValidator.validateEnvironment({}, null, delimiters);
+            assert.fail("Should throw error on Config");
+        } catch(e) {
+            assert.equal(e.message, "No configuration is set");
         }
     });
 });
