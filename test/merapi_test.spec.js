@@ -95,6 +95,44 @@ describe("Merapi Test", function() {
                 assert.equal(e.message, "Configuration error, some env variables are not set");
             }
         }));
+
+        it("can use custom delimiters", asyn(function*() {
+            container = merapi({
+                delimiters: {
+                    left: "[",
+                    right: "]"
+                },
+                config: {
+                    "nameEnv": "[SOME_NAME]"
+                },
+                envConfig: {
+                    test: {
+                        SOME_NAME: "mamazo"
+                    }
+                }
+            });
+            yield container.initialize();
+
+            let name = container.config.get("nameEnv");
+            assert.equal(name, "mamazo");
+        }));
+
+        it("can use default delimiters (left:`{`, right: `}`) if no custom delimiters specified", asyn(function*() {
+            container = merapi({
+                config: {
+                    "nameEnv": "{SOME_NAME}"
+                },
+                envConfig: {
+                    test: {
+                        SOME_NAME: "mamazo"
+                    }
+                }
+            });
+            yield container.initialize();
+
+            let name = container.config.get("nameEnv");
+            assert.equal(name, "mamazo");
+        }));
     });
 
     describe("Components", function() {
