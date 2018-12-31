@@ -330,9 +330,13 @@ class Container extends Component.mixin(AsyncEmitter) {
         );
         const { config, delimiters } = this.options;
         const result = EnvValidator.validateEnvironment(combinedEnv, config, delimiters);
-        if (result.length > 0) {
-            this.logger.log("These configurations are not set on env variables: ");
-            this.logger.log(result);
+
+        if (result.empty.length > 0) {
+            this.logger.warn("These configurations are empty string: ", result.empty);
+        }
+
+        if (result.undefined.length > 0) {
+            this.logger.error("These configurations are not set on env variables: ", result.undefined);
             throw new Error("Configuration error, some env variables are not set");
         }
         return true;

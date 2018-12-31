@@ -96,6 +96,54 @@ describe("Merapi Test", function() {
             }
         }));
 
+        it("should produce warning if some configurations are empty string", asyn(function*() {
+            process.env.SOME_NAME="";
+            container = merapi({
+                delimiters: {
+                    left: "${",
+                    right: "}"
+                },
+                config: {
+                    "package.name": "${SOME_NAME}"
+                }
+            });
+            let a = 0;
+            container.logger = {
+                warn: () => {
+                    a = 1; // warn is called
+                }
+            };
+
+            yield container.initialize();
+            assert.equal(a, 1);
+        }));
+
+        it("should produce warning and throw error if some are empty string and some are undefined", asyn(function*() {
+            process.env.SOME_NAME="";
+            container = merapi({
+                delimiters: {
+                    left: "${",
+                    right: "}"
+                },
+                config: {
+                    "package.name": "${SOME_NAME}"
+                }
+            });
+            let a = 0;
+            container.logger = {
+                warn: () => {
+                    a = 1; // warn is called
+                }
+            };
+
+            try {
+                yield container.initialize();
+            } catch(e) {
+                assert.equal(a, 1);
+                assert.equal(e.message, "Configuration error, some env variables are not set");
+            }
+        }));
+
         it("can use custom delimiters", asyn(function*() {
             container = merapi({
                 delimiters: {
