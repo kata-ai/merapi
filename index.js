@@ -322,11 +322,18 @@ class Container extends Component.mixin(AsyncEmitter) {
     }
 
     validateConfig() {
+        const systemEnv = () => {
+            const result = {};
+            const env = process.env;
+            for(const key of Object.keys(env))
+                result["$"+key] = env[key]; // system env, append $ to key
+            return result;
+        };
         const combinedEnv = Object.assign(
             {},
             this.options.envConfig && this.options.envConfig[this.config.env],
             this.options.extConfig,
-            process.env
+            systemEnv()
         );
         const { config, delimiters } = this.options;
         const result = EnvValidator.validateEnvironment(combinedEnv, config, delimiters);

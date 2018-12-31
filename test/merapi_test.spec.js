@@ -17,6 +17,7 @@ describe("Merapi Test", function() {
         let container = null;
 
         beforeEach(asyn(function*() {
+            process.env.TOKEN="123";
             container = merapi({
                 delimiters: {
                     left: "${",
@@ -27,7 +28,8 @@ describe("Merapi Test", function() {
                     "myConfig": "${resolved.a}",
                     "myEnvConfig": "${resolved.b}",
                     "myStrEnvConfig": "${resolved.c}",
-                    "myCrlfStrEnvConfig": "${resolved.d}"
+                    "myCrlfStrEnvConfig": "${resolved.d}",
+                    "myToken": "${$TOKEN}" // for system env variables, $ is appended
                 },
 
                 envConfig: {
@@ -47,13 +49,20 @@ describe("Merapi Test", function() {
             yield container.initialize();
         }));
 
-        it("can resolve config", function() {
+        it("can resolve config from envConfig", function() {
             assert.notEqual(container, null);
 
             let myConfig = container.config.get("myConfig");
             let pkg = container.config.get("package");
             assert.equal(myConfig, 1);
             assert.equal(pkg.name, "merapi-test");
+        });
+
+        it("can resolve config from system env variables", () => {
+            assert.notEqual(container, null);
+
+            const myToken = container.config.get("myToken");
+            assert.equal(myToken, 123);
         });
 
         it("can resolve environment config", function() {
@@ -104,7 +113,7 @@ describe("Merapi Test", function() {
                     right: "}"
                 },
                 config: {
-                    "package.name": "${SOME_NAME}"
+                    "package.name": "${$SOME_NAME}"
                 }
             });
             let a = 0;
@@ -126,7 +135,7 @@ describe("Merapi Test", function() {
                     right: "}"
                 },
                 config: {
-                    "package.name": "${SOME_NAME}"
+                    "package.name": "${$SOME_NAME}"
                 }
             });
             let a = 0;

@@ -6,11 +6,13 @@ const envValidator = require("../lib/env_validator");
 
 describe("Env validator", () => {
     let config;
-    process.env.GEIST_URI = "https://example.com";
-    process.env.GEIST_TOKEN = "asasaklns12io1u31oi2u3";
+    let env = {
+        "$GEIST_URI": "https://example.com",
+        "$GEIST_TOKEN": "asasaklns12io1u31oi2u3"
+    };
 
     const delimiters = {
-        left: "${$",
+        left: "${",
         right: "}"
     };
 
@@ -26,7 +28,7 @@ describe("Env validator", () => {
     });
 
     it("should return object of empty and undefined env variables, if not set", () => {
-        process.env.GEIST_EMPTY = "";
+        env["$GEIST_EMPTY"] = "";
         config.geist.lala = "${$LALA}";
         config.geist.empty = "${$GEIST_EMPTY}";
         config.diaenne = {
@@ -40,12 +42,12 @@ describe("Env validator", () => {
             undefined: ["LALA", "DIAENNE_URI", "VERSION", "SECRET"],
             empty: ["GEIST_EMPTY"]
         };
-        const actualResult = envValidator.validateEnvironment(process.env, config, delimiters);
-        assert.deepEqual(result, actualResult);
+        const actualResult = envValidator.validateEnvironment(env, config, delimiters);
+        assert.deepEqual(actualResult, result);
     });
 
     it("should return empty list of undefined and empty if env needed is set already", () => {
-        const result = envValidator.validateEnvironment(process.env, config, delimiters);
+        const result = envValidator.validateEnvironment(env, config, delimiters);
         assert.deepStrictEqual(result, {
             undefined: [],
             empty: []
@@ -59,7 +61,7 @@ describe("Env validator", () => {
             version: "${$VERSION}"
         };
         try {
-            envValidator.validateEnvironment(process.env, config, delimiters);
+            envValidator.validateEnvironment(env, config, delimiters);
         } catch(e) {
             assert.equal(e.message, "Error on Config, 'diaenne.type' is needed, but the value is null");
         }
