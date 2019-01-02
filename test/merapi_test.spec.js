@@ -29,13 +29,15 @@ describe("Merapi Test", function() {
                     "myEnvConfig": "${resolved.b}",
                     "myStrEnvConfig": "${resolved.c}",
                     "myCrlfStrEnvConfig": "${resolved.d}",
-                    "myToken": "${$TOKEN}" // for system env variables, $ is appended
+                    "myToken": "${$TOKEN}", // for system env variables, $ is appended
+                    "resolved": {
+                        "a": 1
+                    }
                 },
 
                 envConfig: {
                     test: {
-                        "resolved.a": 1,
-                        "resolved.b": 2,
+                       "resolved.b": 2,
                         "resolved.c": "test",
                         "resolved.d": "test\r",
                     }
