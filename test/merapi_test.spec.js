@@ -37,7 +37,7 @@ describe("Merapi Test", function() {
 
                 envConfig: {
                     test: {
-                       "resolved.b": 2,
+                        "resolved.b": 2,
                         "resolved.c": "test",
                         "resolved.d": "test\r",
                     }
