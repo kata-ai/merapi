@@ -339,7 +339,7 @@ class Container extends Component.mixin(AsyncEmitter) {
         const result = EnvValidator.validateEnvironment(combinedEnv, config, delimiters);
 
         if (result.empty.length > 0) {
-            this.logger.warn("These configurations are empty string: ", result.empty);
+            this.logger.warn("WARNING! These configurations are empty string: ", result.empty);
         }
 
         if (result.undefined.length > 0) {
