@@ -10,6 +10,7 @@ const Injector = require("./lib/injector");
 const Component = require("./lib/component");
 const Logger = require("./lib/logger");
 const utils = require("./lib/utils");
+const EnvValidator = require("./lib/env_validator");
 
 function merapi(options) {
     return new Container(options);
@@ -150,6 +151,10 @@ class Container extends Component.mixin(AsyncEmitter) {
     }
 
     *_initialize() {
+        yield this.emit("beforeValidateConfig", this);
+        this.validateConfig();
+        yield this.emit("afterValidateConfig", this);
+
         yield this.emit("beforeInit", this);
         yield this.emit("beforeConfigResolve", this);
         this.config.resolve();
@@ -314,6 +319,34 @@ class Container extends Component.mixin(AsyncEmitter) {
                 plugin[i] = asyn(plugin[i]);
             }
         }
+    }
+
+    validateConfig() {
+        const systemEnv = () => {
+            const result = {};
+            const env = process.env;
+            for(const key of Object.keys(env))
+                result["$"+key] = env[key]; // system env, append $ to key
+            return result;
+        };
+        const combinedEnv = Object.assign(
+            {},
+            this.options.envConfig && this.options.envConfig[this.config.env],
+            this.options.extConfig,
+            systemEnv()
+        );
+        const { config, delimiters } = this.options;
+        const result = EnvValidator.validateEnvironment(combinedEnv, config, delimiters);
+
+        if (result.empty.length > 0) {
+            this.logger.warn("WARNING! These configurations are empty string: ", result.empty);
+        }
+
+        if (result.undefined.length > 0) {
+            this.logger.error("These configurations are not set on env variables: ", result.undefined);
+            throw new Error("Configuration error, some env variables are not set");
+        }
+        return true;
     }
 }
 

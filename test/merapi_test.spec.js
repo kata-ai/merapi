@@ -10,13 +10,14 @@ process.env.NODE_ENV = process.NODE_ENV || "test";
 /* eslint-env mocha */
 
 describe("Merapi Test", function() {
-    
-    
+
+
     describe("Config", function() {
-        
+
         let container = null;
-        
+
         beforeEach(asyn(function*() {
+            process.env.TOKEN="123";
             container = merapi({
                 delimiters: {
                     left: "${",
@@ -28,11 +29,12 @@ describe("Merapi Test", function() {
                     "myEnvConfig": "${resolved.b}",
                     "myStrEnvConfig": "${resolved.c}",
                     "myCrlfStrEnvConfig": "${resolved.d}",
+                    "myToken": "${$TOKEN}", // for system env variables, $ is appended
                     "resolved": {
                         "a": 1
                     }
                 },
-                
+
                 envConfig: {
                     test: {
                         "resolved.b": 2,
@@ -40,24 +42,31 @@ describe("Merapi Test", function() {
                         "resolved.d": "test\r",
                     }
                 },
-                
+
                 extConfig: {
                     more: true
                 }
             });
-            
+
             yield container.initialize();
         }));
-        
-        it("can resolve config", function() {
+
+        it("can resolve config from envConfig", function() {
             assert.notEqual(container, null);
-            
+
             let myConfig = container.config.get("myConfig");
             let pkg = container.config.get("package");
             assert.equal(myConfig, 1);
             assert.equal(pkg.name, "merapi-test");
         });
-        
+
+        it("can resolve config from system env variables", () => {
+            assert.notEqual(container, null);
+
+            const myToken = container.config.get("myToken");
+            assert.equal(myToken, 123);
+        });
+
         it("can resolve environment config", function() {
             let myEnvConfig = container.config.get("myEnvConfig");
             let myStrEnvConfig = container.config.get("myStrEnvConfig");
@@ -66,26 +75,130 @@ describe("Merapi Test", function() {
             assert.equal(myStrEnvConfig, "test");
             assert.equal(myCrlfStrEnvConfig, "test");
         });
-        
+
         it("can resolve extended config", function() {
             assert.equal(container.config.get("more"), true);
         });
-        
+
         it("can resolve environment variables", function() {
             let ENV = container.config.get("ENV");
             let env = container.config.get("env");
-            
+
             assert.equal(env, process.env.NODE_ENV);
             assert.equal(ENV.NODE_ENV, process.env.NODE_ENV);
             assert.equal(ENV.PATH, process.env.PATH);
         });
+
+        it("can throw error if config value is not set on env variable", asyn(function*() {
+            container = merapi({
+                delimiters: {
+                    left: "${",
+                    right: "}"
+                },
+                config: {
+                    "package.name": "${SOME_NAME}"
+                }
+            });
+
+            try {
+                yield container.initialize();
+            } catch(e) {
+                assert.equal(e.message, "Configuration error, some env variables are not set");
+            }
+        }));
+
+        it("should produce warning if some configurations are empty string", asyn(function*() {
+            process.env.SOME_NAME="";
+            container = merapi({
+                delimiters: {
+                    left: "${",
+                    right: "}"
+                },
+                config: {
+                    "package.name": "${$SOME_NAME}"
+                }
+            });
+            let a = 0;
+            container.logger = {
+                warn: () => {
+                    a = 1; // warn is called
+                }
+            };
+
+            yield container.initialize();
+            assert.equal(a, 1);
+        }));
+
+        it("should produce warning and throw error if some are empty string and some are undefined", asyn(function*() {
+            process.env.SOME_NAME="";
+            container = merapi({
+                delimiters: {
+                    left: "${",
+                    right: "}"
+                },
+                config: {
+                    "package.name": "${$SOME_NAME}"
+                }
+            });
+            let a = 0;
+            container.logger = {
+                warn: () => {
+                    a = 1; // warn is called
+                }
+            };
+
+            try {
+                yield container.initialize();
+            } catch(e) {
+                assert.equal(a, 1);
+                assert.equal(e.message, "Configuration error, some env variables are not set");
+            }
+        }));
+
+        it("can use custom delimiters", asyn(function*() {
+            container = merapi({
+                delimiters: {
+                    left: "[",
+                    right: "]"
+                },
+                config: {
+                    "nameEnv": "[SOME_NAME]"
+                },
+                envConfig: {
+                    test: {
+                        SOME_NAME: "mamazo"
+                    }
+                }
+            });
+            yield container.initialize();
+
+            let name = container.config.get("nameEnv");
+            assert.equal(name, "mamazo");
+        }));
+
+        it("can use default delimiters (left:`{`, right: `}`) if no custom delimiters specified", asyn(function*() {
+            container = merapi({
+                config: {
+                    "nameEnv": "{SOME_NAME}"
+                },
+                envConfig: {
+                    test: {
+                        SOME_NAME: "mamazo"
+                    }
+                }
+            });
+            yield container.initialize();
+
+            let name = container.config.get("nameEnv");
+            assert.equal(name, "mamazo");
+        }));
     });
-    
+
     describe("Components", function() {
-        
+
         let container = null;
         let obj = {};
-        
+
         beforeEach(asyn(function*() {
 
             container = merapi({
@@ -103,7 +216,7 @@ describe("Merapi Test", function() {
 
             container.register("obj", obj, true);
             container.alias("alias", "obj");
-            
+
             yield container.initialize();
         }));
 
@@ -131,12 +244,12 @@ describe("Merapi Test", function() {
             yield container.start();
             assert.equal(config.default("autoloaded", false), true);
         }));
-        
+
         it("can resolve component loader", asyn(function*() {
             const comTest = yield container.resolve("comTest");
             assert.notEqual(comTest, null);
         }));
-        
+
         it("can resolve component class", asyn(function*() {
             const comClassTest = yield container.resolve("comClassTest");
             assert.notEqual(comClassTest, null);
@@ -228,19 +341,19 @@ describe("Merapi Test", function() {
             assert.equal(warningMessage, "No main defined");
         }));
     });
-    
+
     describe("Starter", function() {
-        
+
         it("can start a main module from component loader", asyn(function*() {
-            
+
             let container = merapi({
                 basepath: __dirname,
                 config: {
                 }
             });
-            
+
             let testVal = 0;
-            
+
             container.register("mainCom", function() {
                 return {
                     start() {
@@ -248,18 +361,18 @@ describe("Merapi Test", function() {
                     }
                 };
             });
-            
+
             let config = yield container.resolve("config");
-            
+
             config.set("main", "mainCom");
-            
+
             assert.equal(testVal, 0);
             yield container.initialize();
             assert.equal(testVal, 0);
             yield container.start();
             assert.equal(testVal, 1);
         }));
-        
+
         it("can start a main module from component class", asyn(function*() {
             let testVal = 0;
             let container = merapi({
@@ -268,21 +381,20 @@ describe("Merapi Test", function() {
                     main: "mainCom"
                 }
             });
-            
+
             container.register("mainCom", class MainComponent extends Component {
                 *start() {
                     yield sleep(1);
                     testVal = 1;
                 }
             });
-            
-            
+
+
             assert.equal(testVal, 0);
             yield container.initialize();
             assert.equal(testVal, 0);
             yield container.start();
             assert.equal(testVal, 1);
-            
         }));
     });
 });
