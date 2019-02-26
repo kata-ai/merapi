@@ -10,6 +10,7 @@ const Injector = require("./lib/injector");
 const Component = require("./lib/component");
 const Logger = require("./lib/logger");
 const utils = require("./lib/utils");
+const apm = require("./lib/apm");
 
 function merapi(options) {
     return new Container(options);
@@ -199,6 +200,7 @@ class Container extends Component.mixin(AsyncEmitter) {
     }
 
     *start() {
+        apm(this.config);
         yield this.emit("beforeStart", this);
         let main = this.config("main");
 
