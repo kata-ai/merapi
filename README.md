@@ -16,7 +16,7 @@ Copyright (c) 2015-2017 Kata.ai. All rights reserved.
 
 
 ## Change Log
-v0.19.4  - ELASTIC APM support
+v0.20.0  - ELASTIC APM support
 
 ## Contributors
 - Ahmad Rizqi Meydiarso (rizqme) - Initial Author
