@@ -27,6 +27,7 @@ class Container extends Component.mixin(AsyncEmitter) {
         this.plugins = {};
         this._loadOnStartList = [];
         this._isInitialized = false;
+        this._isShuttingDown = false;
 
         this.registerComponentType("component", this.resolveComponentDescriptor.bind(this));
         this.registerComponentType("alias", this.resolveAliasDescriptor.bind(this));
@@ -194,7 +195,7 @@ class Container extends Component.mixin(AsyncEmitter) {
 
         this.config.logger = yield this.injector.resolve("logger", { $meta: { caller: "config" } });
         this.injector.logger = yield this.injector.resolve("logger", { $meta: { caller: "injector" } });
-        this.logger = yield this.injector.resolve("logger", { $meta: { caller: "container" } });
+        this.logger = yield this.injector.resolve("logger", { $meta: { caller: "container", name: "merapi" },  });
 
         yield this.emit("afterInit", this);
     }
@@ -246,11 +247,17 @@ class Container extends Component.mixin(AsyncEmitter) {
     }
 
     *stop() {
+        if (this._isShuttingDown) return;
+        this._isShuttingDown = true;
+        this.logger.info("Received kill signal");
+        this.logger.info("Exiting process in 3sec...");
         yield this.emit("beforeStop", this);
         yield this.emit("stop", this);
         yield this.emit("afterStop", this);
         this.cleanUp();
-        process.exit();
+        setTimeout(() => {
+            process.exit();
+        }, 3000)
     }
 
     cleanUp() {
