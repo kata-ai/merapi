@@ -257,7 +257,7 @@ class Container extends Component.mixin(AsyncEmitter) {
         this.cleanUp();
         setTimeout(() => {
             process.exit();
-        }, 3000)
+        }, 3000);
     }
 
     cleanUp() {
